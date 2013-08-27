@@ -32,7 +32,8 @@ public class BubbleGame extends MicroGame {
 		bubbleImage = new Texture(Gdx.files.internal("data/bubble.png"));
 		popSound = Gdx.audio.newSound(Gdx.files.internal("data/pop.ogg"));
 		bg = new Color(0.2f, 0.2f, 0.5f, 1.0f);
-		poppedGoal = MathUtils.random(5, 20);
+		poppedGoal = MathUtils.random(5, 12);
+		timeLeft = poppedGoal; // 1 bubble per second
 		
 		parent.showMessage("POP "+poppedGoal+" !");
 	}
@@ -43,24 +44,19 @@ public class BubbleGame extends MicroGame {
 		      y = -r;
 
 		Particle bubble = new Particle(x, y, r, randomBrightColor());
-		bubble.dy = -MathUtils.random(2, 5);
+		bubble.dy = -MathUtils.random(5, 10);
+		bubble.misc = MathUtils.randomBoolean() ? 1 : -1;
 		bubbles.add(bubble);
 	}
 	@Override
-	public void render() {
-		super.render();
-		
-		camera.update();
-		batch.setProjectionMatrix(camera.combined);
-		batch.begin();
-
+	public void onRender() {
 		for (Particle b : bubbles) {
 			batch.setColor(b.color);
 			batch.draw(bubbleImage, b.x-b.radius, b.y-b.radius, b.radius*2, b.radius*2);
 	    }
 		
-		font.draw(batch, "Popped: "+popped, 0, font.getLineHeight());
-		batch.end();
+		String pp = "Popped: "+popped;
+		font.draw(batch, pp, Gdx.graphics.getWidth() - (font.getBounds(pp).width + 4), font.getLineHeight());
 	}
 
 	@Override
@@ -90,7 +86,7 @@ public class BubbleGame extends MicroGame {
 	    		continue;
 	    	}
 	    	
-	    	bubble.dx = MathUtils.cos(bubble.oscillation += (0.0003 * bubble.radius));
+	    	bubble.dx = MathUtils.cos(bubble.oscillation += (0.003 * bubble.misc));
 
 	    	for (int i = 0; i < MULTITOUCH_COUNT && !killed; i++) {
 				if (Gdx.input.isTouched(i) && Gdx.input.justTouched()) {
@@ -99,6 +95,7 @@ public class BubbleGame extends MicroGame {
 
 					if (bubble.contains(touchPos.x, touchPos.y)) {
 						bubble.kill();
+						popSound.play();
 						killed = true;
 						popped += 1;
 						break;
@@ -118,6 +115,8 @@ public class BubbleGame extends MicroGame {
 	}
 	
 	public void dispose() {
+		super.dispose();
+		bubbleImage.dispose();
 		popSound.dispose();
 	}
 }

@@ -22,14 +22,13 @@ public class GameScreen extends Screen {
 	public BitmapFont font;
 	final static int DEFAULT_MESSAGE_TIME = 2;
 	final static ArrayList<String> MICROGAMES = new ArrayList<String>(Arrays.asList(
-		"BubbleGame"
+		"BubbleGame", "AsteroidDodge"
 	));
 	
 	public GameScreen(LilliGame gm) {
 		super(gm);
 		batch = new SpriteBatch();
 		font = new BitmapFont(Gdx.files.internal("data/default.fnt"), Gdx.files.internal("data/default.png"),false);
-		mg = randomMicroGame(null);
 	}
 
 	@Override
@@ -38,6 +37,10 @@ public class GameScreen extends Screen {
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 		stage.act(delta);
 		stage.draw();
+		
+		if (mg == null) {
+			this.switchMicroGame();
+		}
 		
 		mg.update(delta);
 		mg.render();
@@ -51,8 +54,23 @@ public class GameScreen extends Screen {
 			batch.end();
 		}
 		
-		if (mg.isFinished()) {
-			this.switchMicroGame();
+		if (mg.lost) {
+			this.showMessage("GAME OVER! Taking you back to the menu...", 9999);		
+			Timer.schedule(new Task(){
+			    @Override
+			    public void run() {
+			    	mg = null;
+			        game.setScreen("MainMenuScreen");
+			    }
+			}, 1);
+		}
+		
+		if (mg.timeLeft <= 0) {
+			if (!mg.isFinished()) {
+				mg.lost = true;
+			} else {
+				this.switchMicroGame();
+			}
 		}
 	}
 	
@@ -80,7 +98,7 @@ public class GameScreen extends Screen {
 		MicroGame newMg = randomMicroGame(oldMg);
 		
 		mg = newMg;
-		oldMg.dispose();
+		if (oldMg != null) oldMg.dispose();
 	}
 	
 	protected MicroGame randomMicroGame(MicroGame prev) {
@@ -90,7 +108,7 @@ public class GameScreen extends Screen {
 		ArrayList<String> microgames = (ArrayList<String>) MICROGAMES.clone();
 		
 		if (prev != null) {
-			String prevName = prev.getClass().getName();
+			String prevName = prev.getClass().getSimpleName();
 			microgames.remove(prevName);
 		}
 		

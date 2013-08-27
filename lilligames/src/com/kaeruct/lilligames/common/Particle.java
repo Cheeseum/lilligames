@@ -12,13 +12,17 @@ public class Particle extends Circle {
 	public float oscillation;
 	public static final float DEFAULT_RADIUS = 5;
 	public static final Color DEFAULT_COLOR = Color.WHITE;
+	public float rotation;
+	public float misc; // value used for different things depending on the game
 	
 	public Particle(float x, float y, float radius, Color color) {
 		this.x = x;
 		this.y = y;
 		this.radius = radius;
 		this.color = color;
+		this.rotation = 0;
 		this.oscillation = 0;
+		this.misc = 0;
 		this.alive = true;
 	}
 	
@@ -46,5 +50,11 @@ public class Particle extends Circle {
 			   (y + r2) < 0 ||
 			   (x - r2) > Gdx.graphics.getWidth() ||
 			   (y - r2) > Gdx.graphics.getHeight();
+	}
+	
+	public boolean collidesWith(Particle p2) {
+		float dx = p2.x - x, dy = p2.y - y;
+
+		return Math.pow(dx, 2) + Math.pow(dy, 2) < Math.pow(radius + p2.radius, 2);
 	}
 }

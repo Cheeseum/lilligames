@@ -11,7 +11,7 @@ import com.kaeruct.lilligames.LilliGame;
 
 public abstract class Screen implements com.badlogic.gdx.Screen {
 	protected Stage stage;
-	protected LilliGame game;
+	protected final LilliGame game;
 	protected Table table;
 	protected Skin skin;
 	protected boolean backJustPressed;
