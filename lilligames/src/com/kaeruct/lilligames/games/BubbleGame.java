@@ -95,7 +95,7 @@ public class BubbleGame extends MicroGame {
 						popSound.play();
 						killed = true;
 						popped += 1;
-						parent.showMessage(popped+" popped!");
+						parent.showMessage(popped+" popped!", 1);
 						break;
 					}
 				}

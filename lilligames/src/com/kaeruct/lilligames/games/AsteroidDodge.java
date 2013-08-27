@@ -121,6 +121,11 @@ public class AsteroidDodge extends MicroGame {
 			deacc(p);
 		}
 	    p.update();
+	    
+	    if (p.x < 0) p.x = 0;
+	    if (p.y < 0) p.y = 0;
+	    if (p.x > Gdx.graphics.getWidth()) p.x = Gdx.graphics.getWidth();
+	    if (p.y > Gdx.graphics.getHeight()) p.y = Gdx.graphics.getHeight();
 		
 		Iterator<Particle> bb = objects.iterator(); 
 		Particle o;

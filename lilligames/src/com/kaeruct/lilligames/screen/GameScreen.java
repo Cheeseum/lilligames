@@ -20,6 +20,7 @@ public class GameScreen extends Screen {
 	protected String message;
 	public SpriteBatch batch;
 	public BitmapFont font;
+	protected Task currentTask;
 	final static int DEFAULT_MESSAGE_TIME = 2;
 	final static ArrayList<String> MICROGAMES = new ArrayList<String>(Arrays.asList(
 		"BubbleGame", "AsteroidDodge"
@@ -62,7 +63,7 @@ public class GameScreen extends Screen {
 			    	mg = null;
 			        game.setScreen("MainMenuScreen");
 			    }
-			}, 1);
+			}, 2);
 		}
 		
 		if (mg.timeLeft <= 0) {
@@ -80,17 +81,24 @@ public class GameScreen extends Screen {
 	
 	public void showMessage(String message, float time) {
 		final GameScreen parent = this;
+		
+		if (currentTask != null) {
+			currentTask.cancel();
+		}
+		
 		this.message = message;
-		Timer.schedule(new Task(){
+		currentTask = new Task(){
 		    @Override
 		    public void run() {
 		        parent.hideMessage();
 		    }
-		}, time);
+		};
+		Timer.schedule(currentTask, time);
 	}
 
 	protected void hideMessage() {
-		this.message = null;
+		message = null;
+		currentTask = null;
 	}
 
 	protected void switchMicroGame() {
