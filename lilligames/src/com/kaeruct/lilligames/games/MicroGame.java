@@ -14,16 +14,18 @@ import com.kaeruct.lilligames.screen.GameScreen;
 
 public abstract class MicroGame {
 	static final int MULTITOUCH_COUNT = 10;
-	Vector3 touchPos;
-	OrthographicCamera camera;
-	SpriteBatch batch;
-	Color bg;
-	BitmapFont font;
+	protected Vector3 touchPos;
+	protected OrthographicCamera camera;
+	protected SpriteBatch batch;
+	protected Color bg;
+	protected BitmapFont font;
+	protected GameScreen parent;
 	public boolean lost = false;
 	public int timeLeft;
 	public static int DEFAULT_TIME_LEFT = 10;
 	
 	public MicroGame(GameScreen parent) {
+		this.parent = parent;
 		touchPos = new Vector3();
 		camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		camera.position.set(Gdx.graphics.getWidth() / 2.0f, Gdx.graphics.getHeight() / 2.0f, 0);

@@ -33,9 +33,9 @@ public class BubbleGame extends MicroGame {
 		popSound = Gdx.audio.newSound(Gdx.files.internal("data/pop.ogg"));
 		bg = new Color(0.2f, 0.2f, 0.5f, 1.0f);
 		poppedGoal = MathUtils.random(5, 12);
-		timeLeft = poppedGoal; // 1 bubble per second
+		timeLeft = (int)(poppedGoal*1.2); // 1 bubble per 1.2 seconds
 		
-		parent.showMessage("POP "+poppedGoal+" !");
+		parent.showMessage("POP AT LEAST "+poppedGoal+"!");
 	}
 	
 	private void addBubble() {
@@ -54,9 +54,6 @@ public class BubbleGame extends MicroGame {
 			batch.setColor(b.color);
 			batch.draw(bubbleImage, b.x-b.radius, b.y-b.radius, b.radius*2, b.radius*2);
 	    }
-		
-		String pp = "Popped: "+popped;
-		font.draw(batch, pp, Gdx.graphics.getWidth() - (font.getBounds(pp).width + 4), font.getLineHeight());
 	}
 
 	@Override
@@ -98,6 +95,7 @@ public class BubbleGame extends MicroGame {
 						popSound.play();
 						killed = true;
 						popped += 1;
+						parent.showMessage(popped+" popped!");
 						break;
 					}
 				}
