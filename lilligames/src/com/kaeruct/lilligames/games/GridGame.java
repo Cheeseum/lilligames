@@ -17,12 +17,13 @@ public class GridGame extends MicroGame {
 	Particle[][] objects;
 	Color borderColor, gridBgColor;
 	private int w, h;
+	private int offx, offy;
 	int gsize;
 	
 	public GridGame(GameScreen parent) {
 		super(parent);
 		
-		gsize = 64;
+		gsize = 48;
 		borderColor = new Color(0.9f, 0.2f, 0.2f, 0.8f);
 		gridBgColor = new Color(0.5f, 0.1f, 0.1f, 1f);
 		bg = Color.BLACK;
@@ -30,6 +31,9 @@ public class GridGame extends MicroGame {
 		
 		w = (int)(Gdx.graphics.getWidth() / gsize);
 		h = (int)(Gdx.graphics.getHeight() / gsize);
+		offx = (Gdx.graphics.getWidth() % gsize) / 2;
+		offy = (Gdx.graphics.getHeight() % gsize) / 2;
+		
 		objects = new Particle[h][w];
 		
 		borderTx = new Texture(Gdx.files.internal("data/borderbox.png"));
@@ -53,14 +57,14 @@ public class GridGame extends MicroGame {
 	@Override
 	public void onRender() {
 		batch.setColor(gridBgColor);
-		batch.draw(bgTx, 0, 0, w*gsize, h*gsize);
+		batch.draw(bgTx, offx, offy, w*gsize, h*gsize);
 		
 		for (int y = 0; y < h; y += 1) {
 			for (int x = 0; x < w; x += 1) {
 				Particle o = objects[y][x];
 				
-				float px = x*gsize,
-					  py = (h-1-y)*gsize;
+				float px = offx + x*gsize,
+					  py = offy + (h-1-y)*gsize;
 				
 				batch.setColor(borderColor);
 				batch.draw(borderTx, px, py, gsize, gsize);
@@ -85,8 +89,8 @@ public class GridGame extends MicroGame {
 				camera.unproject(touchPos);
 				int cx, cy;
 	
-				cx = ((int) touchPos.x / gsize);
-				cy = h - 1 - ((int) touchPos.y / gsize);
+				cx = ((int) (touchPos.x - offx) / gsize);
+				cy = h - 1 - ((int) (touchPos.y - offy) / gsize);
 				
 				if (cx < 0) cx = 0;
 				if (cy < 0) cy = 0;
