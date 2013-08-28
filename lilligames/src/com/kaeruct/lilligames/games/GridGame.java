@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
+import com.kaeruct.lilligames.common.Grid;
 import com.kaeruct.lilligames.common.Particle;
 import com.kaeruct.lilligames.screen.GameScreen;
 
@@ -14,32 +16,29 @@ public class GridGame extends MicroGame {
 	Texture rockTx, shipTx, borderTx, bgTx;
 	TextureRegion rockImage, shipImage;
 	Sound explodeSound;
-	Particle[][] objects;
 	Color borderColor, gridBgColor;
-	private int w, h;
 	private int offx, offy;
-	int gsize;
+	Grid<Particle> grid;
 	
 	public GridGame(GameScreen parent) {
 		super(parent);
-		
-		gsize = 48;
-		borderColor = new Color(0.9f, 0.2f, 0.2f, 0.8f);
-		gridBgColor = new Color(0.5f, 0.1f, 0.1f, 1f);
+		borderColor = new Color(0.2f, 0.2f, 0.2f, 0.8f);
+		gridBgColor = new Color(0.05f, 0.01f, 0.05f, 1f);
 		bg = Color.BLACK;
 		timeLeft = 999;
 		
-		w = (int)(Gdx.graphics.getWidth() / gsize);
-		h = (int)(Gdx.graphics.getHeight() / gsize);
-		offx = (Gdx.graphics.getWidth() % gsize) / 2;
-		offy = (Gdx.graphics.getHeight() % gsize) / 2;
+		int s = 48;
+		int w = (int)(Gdx.graphics.getWidth() / s);
+		int h = (int)(Gdx.graphics.getHeight() / s);
+		offx = (Gdx.graphics.getWidth() % s) / 2;
+		offy = (Gdx.graphics.getHeight() % s) / 2;
 		
-		objects = new Particle[h][w];
+		grid = new Grid<Particle>(w, h, s);
 		
 		borderTx = new Texture(Gdx.files.internal("data/borderbox.png"));
 		bgTx = new Texture(Gdx.files.internal("data/pixel.png"));
 		
-		rockTx = new Texture(Gdx.files.internal("data/bubble.png"));
+		rockTx = new Texture(Gdx.files.internal("data/potato.png"));
 		rockTx.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
 		rockImage = new TextureRegion(rockTx, 0, 0,
 				rockTx.getWidth(), rockTx.getHeight());
@@ -57,24 +56,24 @@ public class GridGame extends MicroGame {
 	@Override
 	public void onRender() {
 		batch.setColor(gridBgColor);
-		batch.draw(bgTx, offx, offy, w*gsize, h*gsize);
+		batch.draw(bgTx, offx, offy, grid.pxw, grid.pxh);
 		
-		for (int y = 0; y < h; y += 1) {
-			for (int x = 0; x < w; x += 1) {
-				Particle o = objects[y][x];
+		for (int y = 0; y < grid.h; y += 1) {
+			for (int x = 0; x < grid.w; x += 1) {
+				Particle o = grid.at(x, y);
 				
-				float px = offx + x*gsize,
-					  py = offy + (h-1-y)*gsize;
+				float px = offx + x*grid.s,
+					  py = offy + (grid.h-1-y)*grid.s;
 				
 				batch.setColor(borderColor);
-				batch.draw(borderTx, px, py, gsize, gsize);
+				batch.draw(borderTx, px, py, grid.s, grid.s);
 				
 				if (o != null) {
 					batch.setColor(o.color);
 					batch.draw(rockImage,
 							px, py,
-							gsize, gsize,
-							gsize, gsize,
+							grid.s/2, grid.s/2,
+							grid.s, grid.s,
 							1.0f, 1.0f, o.rotation);
 				}
 			}
@@ -89,33 +88,37 @@ public class GridGame extends MicroGame {
 				camera.unproject(touchPos);
 				int cx, cy;
 	
-				cx = ((int) (touchPos.x - offx) / gsize);
-				cy = h - 1 - ((int) (touchPos.y - offy) / gsize);
+				cx = ((int) (touchPos.x - offx) / grid.s);
+				cy = grid.h - 1 - ((int) (touchPos.y - offy) / grid.s);
 				
-				if (cx < 0) cx = 0;
-				if (cy < 0) cy = 0;
-				if (cx >= w) cx = w-1;
-				if (cy >= h) cy = h-1;
+				cx = grid.fixXCoord(cx);
+				cy = grid.fixYCoord(cy);
 				
-				if (!isOcuppied(cx, cy)) {
-					addAt(new Particle(), cx, cy);
-				}
+				grid.addAt(new Particle(), cx, cy);
 			}
 		}
-	}
-	
-	private void addAt(Particle particle, int cx, int cy) {
-		try {
-			objects[cy][cx] = new Particle();
-		} catch (ArrayIndexOutOfBoundsException e) {
-		}
-	}
-
-	public boolean isOcuppied(int x, int y) {
-		try {
-			return objects[y][x] != null;
-		} catch (ArrayIndexOutOfBoundsException e) {
-			return true;
+		
+		for (int y = 0; y < grid.h; y += 1) {
+			for (int x = 0; x < grid.w; x += 1) {
+				Particle o = grid.at(x, y);
+				
+				if (o != null) {
+					o.update();
+					o.misc += (int)(delta*100);
+					if (o.misc%50 == 0) {
+						int nx = x,
+							ny = y;
+							
+						if (MathUtils.randomBoolean()) nx += (MathUtils.randomBoolean() ? 1 : -1);
+						if (MathUtils.randomBoolean()) ny += (MathUtils.randomBoolean() ? 1 : -1);
+						
+						nx = grid.fixXCoord(nx);
+						ny = grid.fixYCoord(ny);
+						
+						grid.moveFromTo(x, y, nx, ny);
+					}
+				}
+			}
 		}
 	}
 	
