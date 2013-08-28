@@ -23,8 +23,8 @@ public class GameScreen extends Screen {
 	protected Task currentTask;
 	final static int DEFAULT_MESSAGE_TIME = 2;
 	final static ArrayList<String> MICROGAMES = new ArrayList<String>(Arrays.asList(
-			"Eraser"
-//			,"BubbleGame", "AsteroidDodge"
+			"GridGame"
+			//"BubbleGame", "AsteroidDodge"
 	));
 	
 	public GameScreen(LilliGame gm) {

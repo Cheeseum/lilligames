@@ -34,6 +34,10 @@ public class Particle extends Circle {
 		this(x, y, DEFAULT_RADIUS, DEFAULT_COLOR);
 	}
 	
+	public Particle() {
+		this(0, 0);
+	}
+	
 	public boolean update() {
 		x += dx;
 		y -= dy;
