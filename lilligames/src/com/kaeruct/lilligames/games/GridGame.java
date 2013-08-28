@@ -79,24 +79,25 @@ public class GridGame extends MicroGame {
 
 	@Override
 	public void update(float delta) {
-		if (Gdx.input.isTouched() && Gdx.input.justTouched()) {
-			touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-			camera.unproject(touchPos);
-			int cx, cy;
-
-			cx = ((int) touchPos.x / gsize);
-			cy = h - 1 - ((int) touchPos.y / gsize);
-			
-			if (cx < 0) cx = 0;
-			if (cy < 0) cy = 0;
-			if (cx >= w) cx = w-1;
-			if (cy >= h) cy = h-1;
-			
-			if (!isOcuppied(cx, cy)) {
-				addAt(new Particle(), cx, cy);
+		for (int i = 0; i < MULTITOUCH_COUNT; i++) {
+			if (Gdx.input.isTouched(i) && Gdx.input.justTouched()) {
+				touchPos.set(Gdx.input.getX(i), Gdx.input.getY(i), 0);
+				camera.unproject(touchPos);
+				int cx, cy;
+	
+				cx = ((int) touchPos.x / gsize);
+				cy = h - 1 - ((int) touchPos.y / gsize);
+				
+				if (cx < 0) cx = 0;
+				if (cy < 0) cy = 0;
+				if (cx >= w) cx = w-1;
+				if (cy >= h) cy = h-1;
+				
+				if (!isOcuppied(cx, cy)) {
+					addAt(new Particle(), cx, cy);
+				}
 			}
 		}
-	   
 	}
 	
 	private void addAt(Particle particle, int cx, int cy) {
