@@ -3,6 +3,7 @@ package com.kaeruct.lilligames.screen;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL10;
@@ -21,6 +22,9 @@ public class GameScreen extends Screen {
 	public SpriteBatch batch;
 	public BitmapFont font;
 	protected Task currentTask;
+	protected int currentMg;
+	protected ArrayList<String> shuffledMicrogames; 
+	
 	final static int DEFAULT_MESSAGE_TIME = 2;
 	final static ArrayList<String> MICROGAMES = new ArrayList<String>(Arrays.asList(
 			"FillGrid",
@@ -32,6 +36,7 @@ public class GameScreen extends Screen {
 		super(gm);
 		batch = new SpriteBatch();
 		font = new BitmapFont(Gdx.files.internal("data/default.fnt"), Gdx.files.internal("data/default.png"),false);
+		currentMg = -1;
 	}
 
 	@Override
@@ -105,24 +110,23 @@ public class GameScreen extends Screen {
 
 	protected void switchMicroGame() {
 		MicroGame oldMg = mg;
-		MicroGame newMg = randomMicroGame(oldMg);
+		MicroGame newMg = randomMicroGame();
 		
 		mg = newMg;
 		if (oldMg != null) oldMg.dispose();
 	}
 	
-	protected MicroGame randomMicroGame(MicroGame prev) {
+	@SuppressWarnings("unchecked")
+	protected MicroGame randomMicroGame() {
 		MicroGame game = null;
 	
-		@SuppressWarnings("unchecked")
-		ArrayList<String> microgames = (ArrayList<String>) MICROGAMES.clone();
-		
-		if (prev != null) {
-			String prevName = prev.getClass().getSimpleName();
-			microgames.remove(prevName);
+		if (currentMg == -1 || currentMg == MICROGAMES.size()) {
+			shuffledMicrogames = (ArrayList<String>) MICROGAMES.clone();
+			Collections.shuffle(shuffledMicrogames);
+			currentMg = 0;
 		}
 		
-		String name = microgames.get(MathUtils.random(0, microgames.size()-1));
+		String name = shuffledMicrogames.get(currentMg++);
 
 		Class<?> screenClass;
 		try {

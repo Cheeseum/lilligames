@@ -23,14 +23,14 @@ public class FillGrid extends MicroGame {
 		gridBgColor = new Color(0.05f, 0.01f, 0.05f, 1f);
 		fillColor = randomNormalColor();
 		bg = Color.BLACK;
-		timeLeft = MathUtils.random(4, 6);
-		System.out.println(timeLeft);
 		
-		int s = 48;
+		int s = 64;
 		int w = (int)(Gdx.graphics.getWidth() / s);
 		int h = (int)(Gdx.graphics.getHeight() / s);
 		offx = (Gdx.graphics.getWidth() % s) / 2;
 		offy = (Gdx.graphics.getHeight() % s) / 2;
+		
+		timeLeft = (int) Math.ceil(w*h/15);
 		
 		grid = new Grid<Particle>(w, h, s);
 		
