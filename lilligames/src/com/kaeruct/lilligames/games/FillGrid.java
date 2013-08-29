@@ -4,28 +4,27 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.Texture.TextureFilter;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.kaeruct.lilligames.common.Grid;
 import com.kaeruct.lilligames.common.Particle;
 import com.kaeruct.lilligames.screen.GameScreen;
 
-public class GridGame extends MicroGame {
+public class FillGrid extends MicroGame {
 	
-	Texture rockTx, shipTx, borderTx, bgTx;
-	TextureRegion rockImage, shipImage;
-	Sound explodeSound;
-	Color borderColor, gridBgColor;
+	Texture fillTx, borderTx, bgTx;
+	Sound splatSound;
+	Color borderColor, gridBgColor, fillColor;
 	private int offx, offy;
 	Grid<Particle> grid;
 	
-	public GridGame(GameScreen parent) {
+	public FillGrid(GameScreen parent) {
 		super(parent);
 		borderColor = new Color(0.2f, 0.2f, 0.2f, 0.8f);
 		gridBgColor = new Color(0.05f, 0.01f, 0.05f, 1f);
+		fillColor = randomNormalColor();
 		bg = Color.BLACK;
-		timeLeft = 999;
+		timeLeft = MathUtils.random(4, 6);
+		System.out.println(timeLeft);
 		
 		int s = 48;
 		int w = (int)(Gdx.graphics.getWidth() / s);
@@ -38,19 +37,10 @@ public class GridGame extends MicroGame {
 		borderTx = new Texture(Gdx.files.internal("data/borderbox.png"));
 		bgTx = new Texture(Gdx.files.internal("data/pixel.png"));
 		
-		rockTx = new Texture(Gdx.files.internal("data/potato.png"));
-		rockTx.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
-		rockImage = new TextureRegion(rockTx, 0, 0,
-				rockTx.getWidth(), rockTx.getHeight());
+		fillTx = new Texture(Gdx.files.internal("data/pixel.png"));
+		splatSound = Gdx.audio.newSound(Gdx.files.internal("data/pop.ogg"));
 		
-		shipTx = new Texture(Gdx.files.internal("data/ship.png"));
-		shipTx.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
-		shipImage = new TextureRegion(shipTx, 0, 0,
-				 shipTx.getWidth(),  shipTx.getHeight());
-		
-		explodeSound = Gdx.audio.newSound(Gdx.files.internal("data/pop.ogg"));
-		
-		parent.showMessage("");
+		parent.showMessage("FILL THE GRID!");
 	}
 
 	@Override
@@ -69,12 +59,13 @@ public class GridGame extends MicroGame {
 				batch.draw(borderTx, px, py, grid.s, grid.s);
 				
 				if (o != null) {
-					batch.setColor(o.color);
-					batch.draw(rockImage,
-							px, py,
-							grid.s/2, grid.s/2,
-							grid.s, grid.s,
-							1.0f, 1.0f, o.rotation);
+					float r2 = o.radius*2,
+						  gs2 = grid.s/2;
+					
+					batch.setColor(fillColor);
+					batch.draw(fillTx,
+							px-o.radius+gs2, py-o.radius+gs2,
+							r2, r2);
 				}
 			}
 		}
@@ -98,40 +89,35 @@ public class GridGame extends MicroGame {
 			}
 		}
 		
-		for (int y = 0; y < grid.h; y += 1) {
-			for (int x = 0; x < grid.w; x += 1) {
-				Particle o = grid.at(x, y);
+		for (int y = 0; y < grid.h; y += 1) { for (int x = 0; x < grid.w; x += 1) {
+			Particle o = grid.at(x, y);
+			
+			if (o != null) {
+				o.misc += (int)(delta*100);
+				if (o.radius+0.5 <= grid.s/2) o.radius += 0.5;
 				
-				if (o != null) {
-					o.update();
-					o.misc += (int)(delta*100);
-					if (o.misc%50 == 0) {
-						int nx = x,
-							ny = y;
-							
-						if (MathUtils.randomBoolean()) nx += (MathUtils.randomBoolean() ? 1 : -1);
-						if (MathUtils.randomBoolean()) ny += (MathUtils.randomBoolean() ? 1 : -1);
-						
-						nx = grid.fixXCoord(nx);
-						ny = grid.fixYCoord(ny);
-						
-						grid.moveFromTo(x, y, nx, ny);
+				if (o.misc%25 == 0) {
+					int[] c = {x+1, y, x-1, y, x, y+1, x, y-1};
+					
+					for (int i = 0; i < c.length; i += 2) {
+						if (!grid.isOcuppied(c[i], c[i+1])) {
+							grid.addAt(new Particle(), c[i], c[i+1]);
+						}
 					}
 				}
 			}
-		}
+		}}
 	}
 	
 	@Override
 	public boolean isFinished() {
-		return false;
+		return grid.isFull();
 	}
 	public void dispose() {
 		super.dispose();
-		explodeSound.dispose();
+		splatSound.dispose();
 		borderTx.dispose();
 		bgTx.dispose();
-		rockTx.dispose();
-		shipTx.dispose();
+		fillTx.dispose();
 	}
 }

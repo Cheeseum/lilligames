@@ -23,8 +23,9 @@ public class GameScreen extends Screen {
 	protected Task currentTask;
 	final static int DEFAULT_MESSAGE_TIME = 2;
 	final static ArrayList<String> MICROGAMES = new ArrayList<String>(Arrays.asList(
-			"GridGame"
-			//"BubbleGame", "AsteroidDodge"
+			"FillGrid",
+			"BubblePop",
+			"AsteroidDodge"
 	));
 	
 	public GameScreen(LilliGame gm) {
@@ -70,7 +71,7 @@ public class GameScreen extends Screen {
 		if (mg.timeLeft <= 0) {
 			if (!mg.isFinished()) {
 				mg.lost = true;
-			} else {
+			} else if (!mg.lost) {
 				this.switchMicroGame();
 			}
 		}

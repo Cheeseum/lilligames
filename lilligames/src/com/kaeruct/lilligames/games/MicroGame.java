@@ -78,6 +78,20 @@ public abstract class MicroGame {
 		}, 1);
 	}
 	
+	public Color randomDarkColor() {
+		float r = MathUtils.random(0, 0.4f),
+			  g = MathUtils.random(0, 0.4f),
+			  b = MathUtils.random(0, 0.4f);
+		return new Color(r, g, b, 1);
+	}
+	
+	public Color randomNormalColor() {
+		float r = MathUtils.random(0.2f, 0.6f),
+			  g = MathUtils.random(0.2f, 0.6f),
+			  b = MathUtils.random(0.2f, 0.6f);
+		return new Color(r, g, b, 1);
+	}
+	
 	public Color randomBrightColor() {
 		float r = MathUtils.random(0.5f, 1),
 			  g = MathUtils.random(0.5f, 1),

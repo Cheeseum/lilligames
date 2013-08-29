@@ -12,7 +12,7 @@ import com.badlogic.gdx.utils.TimeUtils;
 import com.kaeruct.lilligames.common.Particle;
 import com.kaeruct.lilligames.screen.GameScreen;
 
-public class BubbleGame extends MicroGame {
+public class BubblePop extends MicroGame {
 	
 	Array<Particle> bubbles;
 	Texture bubbleImage;
@@ -26,7 +26,7 @@ public class BubbleGame extends MicroGame {
 	int popped = 0;
 	int poppedGoal;
 	
-	public BubbleGame(GameScreen parent) {
+	public BubblePop(GameScreen parent) {
 		super(parent);
 		bubbles = new Array<Particle>();
 		bubbleImage = new Texture(Gdx.files.internal("data/bubble.png"));
