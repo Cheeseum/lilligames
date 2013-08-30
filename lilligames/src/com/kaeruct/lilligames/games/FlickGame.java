@@ -108,5 +108,11 @@ public class FlickGame extends MicroGame {
 	    	}
 		}
 	}
-
+	
+	@Override
+	public void dispose() {
+		super.dispose();
+		asteroidTx.dispose();
+		Gdx.input.setInputProcessor(null);
+	}
 }
