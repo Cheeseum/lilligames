@@ -38,6 +38,12 @@ public class Particle extends Circle {
 		this(0, 0);
 	}
 	
+	public Particle(Particle p) {
+		this(p.x, p.y, p.radius, p.color);
+		this.oscillation = p.oscillation;
+		this.misc = p.misc;
+	}
+
 	public boolean update() {
 		x += dx;
 		y -= dy;

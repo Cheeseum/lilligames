@@ -12,14 +12,16 @@ public class FillGrid extends MicroGame {
 	
 	Texture fillTx, borderTx, bgTx;
 	Sound splatSound;
-	Color borderColor, gridBgColor, fillColor;
+	Color borderColor, gridBgColor, fillColor, incColor;
 	private int offx, offy;
 	Grid<Particle> grid;
+	private boolean full;
 	
 	public FillGrid(GameScreen parent) {
 		super(parent);
 		borderColor = new Color(0.2f, 0.2f, 0.2f, 0.8f);
 		gridBgColor = new Color(0.05f, 0.01f, 0.05f, 1f);
+		incColor = new Color(0.01f, 0.01f, 0.01f, 1f);
 		fillColor = randomNormalColor();
 		bg = Color.BLACK;
 		
@@ -37,7 +39,7 @@ public class FillGrid extends MicroGame {
 		bgTx = new Texture(Gdx.files.internal("data/pixel.png"));
 		
 		fillTx = new Texture(Gdx.files.internal("data/pixel.png"));
-		splatSound = Gdx.audio.newSound(Gdx.files.internal("data/pop.ogg"));
+		splatSound = Gdx.audio.newSound(Gdx.files.internal("data/splat.ogg"));
 		
 		parent.showMessage("FILL THE GRID!");
 	}
@@ -72,19 +74,21 @@ public class FillGrid extends MicroGame {
 
 	@Override
 	public void update(float delta) {
-		for (int i = 0; i < MULTITOUCH_COUNT; i++) {
-			if (Gdx.input.isTouched(i) && Gdx.input.justTouched()) {
-				touchPos.set(Gdx.input.getX(i), Gdx.input.getY(i), 0);
-				camera.unproject(touchPos);
-				int cx, cy;
-	
-				cx = ((int) (touchPos.x - offx) / grid.s);
-				cy = grid.h - 1 - ((int) (touchPos.y - offy) / grid.s);
-				
-				cx = grid.fixXCoord(cx);
-				cy = grid.fixYCoord(cy);
-				
-				grid.addAt(new Particle(), cx, cy);
+		if (!full) {
+			for (int i = 0; i < MULTITOUCH_COUNT; i++) {
+				if (Gdx.input.isTouched(i) && Gdx.input.justTouched()) {
+					touchPos.set(Gdx.input.getX(i), Gdx.input.getY(i), 0);
+					camera.unproject(touchPos);
+					int cx, cy;
+		
+					cx = ((int) (touchPos.x - offx) / grid.s);
+					cy = grid.h - 1 - ((int) (touchPos.y - offy) / grid.s);
+					
+					cx = grid.fixXCoord(cx);
+					cy = grid.fixYCoord(cy);
+					
+					grid.addAt(new Particle(), cx, cy);
+				}
 			}
 		}
 		
@@ -95,23 +99,37 @@ public class FillGrid extends MicroGame {
 				o.misc += (int)(delta*100);
 				if (o.radius+0.5 <= grid.s/2) o.radius += 1;
 				
-				if (o.misc%25 == 0) {
-					int[] c = {x+1, y, x-1, y, x, y+1, x, y-1};
-					
-					for (int i = 0; i < c.length; i += 2) {
-						if (!grid.isOcuppied(c[i], c[i+1])) {
-							grid.addAt(new Particle(), c[i], c[i+1]);
+				if (!full) {
+					if (o.misc%25 == 0) {
+						int[] c = {x+1, y, x-1, y, x, y+1, x, y-1};
+						
+						for (int i = 0; i < c.length; i += 2) {
+							if (!grid.isOcuppied(c[i], c[i+1])) {
+								grid.addAt(new Particle(), c[i], c[i+1]);
+							}
 						}
 					}
 				}
 			}
 		}}
+		
+		if (!full) {
+			full = grid.isFull();
+		} else {
+			fillColor.add(incColor);
+		}
+		
+		if (fillColor.equals(Color.WHITE)) {
+			// finish game immediately
+			this.timeLeft = 0;
+		}
 	}
 	
 	@Override
 	public boolean isFinished() {
 		return grid.isFull();
 	}
+	
 	public void dispose() {
 		super.dispose();
 		splatSound.dispose();

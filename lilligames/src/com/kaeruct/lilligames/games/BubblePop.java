@@ -19,10 +19,11 @@ public class BubblePop extends MicroGame {
 	Sound popSound;
 	int interval = 700000000;
 	long lastTime = 0;
-	float minr = Gdx.graphics.getWidth()/32;
+	float minr = Gdx.graphics.getWidth()/25;
 	float maxr = Gdx.graphics.getWidth()/10;
 	float minspawn = maxr*2;
 	float maxspawn = Gdx.graphics.getWidth()-maxr*2;
+	Color fadeColor;
 	int popped = 0;
 	int poppedGoal;
 	
@@ -34,6 +35,8 @@ public class BubblePop extends MicroGame {
 		bg = new Color(0.2f, 0.2f, 0.5f, 1.0f);
 		poppedGoal = MathUtils.random(5, 12);
 		timeLeft = (int)(poppedGoal*1.2); // 1 bubble per 1.2 seconds
+		
+		fadeColor = new Color(0.01f, 0.01f, 0.01f, 0.2f);
 		
 		parent.showMessage("POP AT LEAST "+poppedGoal+"!");
 	}
@@ -48,6 +51,18 @@ public class BubblePop extends MicroGame {
 		bubble.misc = MathUtils.randomBoolean() ? 1 : -1;
 		bubbles.add(bubble);
 	}
+	
+	private void popBubble(Particle bubble) {
+		bubble.kill();
+		popSound.play();
+		
+		Particle popped = new Particle(bubble);
+		popped.misc = 0;
+		popped.dx = 0;
+		popped.dy = 0;
+		bubbles.add(popped);
+	}
+	
 	@Override
 	public void onRender() {
 		for (Particle b : bubbles) {
@@ -78,21 +93,27 @@ public class BubblePop extends MicroGame {
 		while (bb.hasNext()) {
 			bubble = bb.next();
 
-	    	if (!bubble.update()) {
+	    	if (bubble.misc == 0) {
+	    		bubble.color.sub(fadeColor);
+	    		bubble.radius += 5;
+	    		if (bubble.color.a == 0) {
+	    			bb.remove();
+	    			continue;
+	    		}
+	    	} else if (!bubble.update()) {
 	    		bb.remove();
 	    		continue;
 	    	}
 	    	
-	    	bubble.dx = MathUtils.cos(bubble.oscillation += (0.003 * bubble.misc));
+	    	bubble.dx = MathUtils.cos(bubble.oscillation += (0.005 * bubble.misc));
 
 	    	for (int i = 0; i < MULTITOUCH_COUNT && !killed; i++) {
 				if (Gdx.input.isTouched(i) && Gdx.input.justTouched()) {
 					touchPos.set(Gdx.input.getX(i), Gdx.input.getY(i), 0);
 					camera.unproject(touchPos);
 
-					if (bubble.contains(touchPos.x, touchPos.y)) {
-						bubble.kill();
-						popSound.play();
+					if (bubble.misc != 0 && bubble.contains(touchPos.x, touchPos.y)) {
+						popBubble(bubble);
 						killed = true;
 						popped += 1;
 						parent.showMessage(popped+" popped!", 1);

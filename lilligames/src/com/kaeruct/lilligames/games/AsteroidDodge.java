@@ -24,6 +24,7 @@ public class AsteroidDodge extends MicroGame {
 	int interval = 700000000;
 	float minr, maxr;
 	Particle p; // player
+	Color fadeColor;
 	
 	public AsteroidDodge(GameScreen parent) {
 		super(parent);
@@ -38,11 +39,12 @@ public class AsteroidDodge extends MicroGame {
 		shipImage = new TextureRegion(shipTx, 0, 0,
 				 shipTx.getWidth(),  shipTx.getHeight());
 		
-		
-		explodeSound = Gdx.audio.newSound(Gdx.files.internal("data/pop.ogg"));
+		explodeSound = Gdx.audio.newSound(Gdx.files.internal("data/explosion.ogg"));
 		
 		bg = new Color(0.05f, 0.1f, 0.1f, 1.0f);
 		timeLeft = MathUtils.random(5, 15);
+		
+		fadeColor = new Color(0.01f, 0.01f, 0.01f, 0.1f);
 		
 		float d = Math.max(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		minr = d/32;
@@ -52,6 +54,7 @@ public class AsteroidDodge extends MicroGame {
 				Gdx.graphics.getWidth()/2,
 				Gdx.graphics.getHeight()/2,
 				d/32);
+		p.misc = 0;
 		
 		parent.showMessage("AVOID THE ASTEROIDS!");
 	}
@@ -140,10 +143,19 @@ public class AsteroidDodge extends MicroGame {
 	    		continue;
 	    	}
 	    	
-			if (o.collidesWith(p)) {
+			if (p.misc == 0&& o.collidesWith(p)) {
 				explodeSound.play();
-				p.radius = 0;
-				lost = true;
+				p.misc = 1;
+			}
+			
+			if (p.misc == 1) {
+				p.radius += 5;
+				p.color.sub(fadeColor);
+				
+				if (p.color.a == 0) {
+					p.kill();
+					lost = true;
+				}
 			}
 	    	
 	    	if (o.offscreen()) {
