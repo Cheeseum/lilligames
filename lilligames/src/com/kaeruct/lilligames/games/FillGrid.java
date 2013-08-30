@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.MathUtils;
 import com.kaeruct.lilligames.common.Grid;
 import com.kaeruct.lilligames.common.Particle;
 import com.kaeruct.lilligames.screen.GameScreen;
@@ -94,7 +93,7 @@ public class FillGrid extends MicroGame {
 			
 			if (o != null) {
 				o.misc += (int)(delta*100);
-				if (o.radius+0.5 <= grid.s/2) o.radius += 0.5;
+				if (o.radius+0.5 <= grid.s/2) o.radius += 1;
 				
 				if (o.misc%25 == 0) {
 					int[] c = {x+1, y, x-1, y, x, y+1, x, y-1};

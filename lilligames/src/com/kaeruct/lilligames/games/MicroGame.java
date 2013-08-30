@@ -25,6 +25,8 @@ public abstract class MicroGame {
 	public int timeLeft;
 	public static int DEFAULT_TIME_LEFT = 10;
 	
+	public Task dtlTask;
+	
 	public MicroGame(GameScreen parent) {
 		Texture.setEnforcePotImages(true);
 		this.parent = parent;
@@ -34,6 +36,13 @@ public abstract class MicroGame {
 		batch = parent.batch;
 		font = parent.font;
 		timeLeft = DEFAULT_TIME_LEFT;
+		
+		dtlTask = new Task(){
+		    @Override
+		    public void run() {
+		        decreaseTimeLeft();
+		    }
+		};
 		decreaseTimeLeft();
 	}
 	
@@ -64,18 +73,12 @@ public abstract class MicroGame {
 	}
 	
 	public void dispose() {
-
+		dtlTask.cancel();
 	}
 	
 	protected void decreaseTimeLeft() {
 		if (timeLeft >= 1) timeLeft -= 1;
-		
-		Timer.schedule(new Task(){
-		    @Override
-		    public void run() {
-		        decreaseTimeLeft();
-		    }
-		}, 1);
+		Timer.schedule(dtlTask, 1);
 	}
 	
 	public Color randomDarkColor() {
