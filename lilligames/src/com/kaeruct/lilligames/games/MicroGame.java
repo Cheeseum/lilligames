@@ -78,6 +78,7 @@ public abstract class MicroGame {
 	
 	protected void decreaseTimeLeft() {
 		if (timeLeft >= 1) timeLeft -= 1;
+		
 		Timer.schedule(dtlTask, 1);
 	}
 	

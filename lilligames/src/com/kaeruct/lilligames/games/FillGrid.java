@@ -88,6 +88,7 @@ public class FillGrid extends MicroGame {
 					cy = grid.fixYCoord(cy);
 					
 					grid.addAt(new Particle(), cx, cy);
+					splatSound.play();
 				}
 			}
 		}
