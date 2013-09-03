@@ -8,9 +8,11 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.kaeruct.lilligames.common.Particle;
@@ -22,27 +24,49 @@ public class FlickGame extends MicroGame {
 	Texture asteroidTx;
 	TextureRegion asteroidImage;
 	
-	Vector2 lastTouchPos;
+	Vector3 lastTouchPos;
 	int spawnInterval = 1000000000;
 	long lastTime = 0;
 	
 	class InputHandler extends InputAdapter {
 		@Override
+		public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+			lastTouchPos.set(screenX, screenY, 0);
+			camera.unproject(lastTouchPos);
+			return true;
+		}
+		
+		@Override
 		public boolean touchDragged (int screenX, int screenY, int pointer) {
-			Vector2 touchPos = new Vector2(screenX, screenY);
-			Vector2 center = new Vector2();
+			touchPos.set(screenX, screenY, 0);
+			camera.unproject(touchPos);
 			
+			Vector2 center = new Vector2();
+			Vector2 touchPos2 = new Vector2(touchPos.x, touchPos.y);
+			Vector2 lastTouchPos2 = new Vector2(lastTouchPos.x, lastTouchPos.y);
+			
+			
+			System.out.println(touchPos.x + " " + touchPos.y + " last: " + lastTouchPos.x + " " + lastTouchPos.y);
+		
 			for (Particle o : objects) {
 				center.set(o.x, o.y);
-				if (Intersector.intersectSegmentCircle(lastTouchPos, touchPos, center, o.radius * o.radius)) {
-					Vector2 penetration = center.sub(touchPos);
-					o.dx += penetration.x * 0.2;
-					o.dy += penetration.y * 0.2;
-					break;
+				if (Intersector.intersectSegmentCircle(lastTouchPos2, touchPos2, center, o.radius * o.radius)) {
+					Vector2 velocity = lastTouchPos2.sub(touchPos2).mul(0.5f);
+					if (velocity.len() > 3.0f) {
+						o.dx += -velocity.x;
+						o.dy += velocity.y;
+						break;
+					}
 				}
 			}
 			
+			// touchPos is already in world space
 			lastTouchPos.set(touchPos);
+			return true;
+		}
+		
+		@Override
+		public boolean touchUp(int screenX, int screenY, int pointer, int button) {
 			return true;
 		}
 	}
@@ -57,7 +81,7 @@ public class FlickGame extends MicroGame {
 		asteroidTx.getWidth(), asteroidTx.getHeight());
 		
 		objects = new Array<Particle>();
-		lastTouchPos = new Vector2();
+		lastTouchPos = new Vector3();
 		
 		Gdx.input.setInputProcessor(new InputHandler());
 	}
@@ -82,6 +106,16 @@ public class FlickGame extends MicroGame {
 					o.radius*2, o.radius*2,
 					1.0f, 1.0f, o.rotation);
 	    }
+		
+		batch.end();
+		
+		ShapeRenderer r = new ShapeRenderer();
+		r.begin(ShapeRenderer.ShapeType.Circle);
+		r.setColor(1, 0, 0, 1);
+		r.circle(touchPos.x,  touchPos.y, 1.0f);
+		r.circle(lastTouchPos.x,  lastTouchPos.y, 1.0f);
+		r.end();
+		batch.begin();
 	}
 
 	@Override
