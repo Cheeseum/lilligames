@@ -3,12 +3,12 @@ package com.kaeruct.lilligames.screen;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
 import com.kaeruct.lilligames.LilliGame;
@@ -20,17 +20,30 @@ public class GameScreen extends Screen {
 	protected String message;
 	public SpriteBatch batch;
 	public BitmapFont font;
-	protected Task currentTask;
+	protected int currentMg;
+	protected ArrayList<String> shuffledMicrogames;
+	private Task hideMessageTask; 
+	
 	final static int DEFAULT_MESSAGE_TIME = 2;
 	final static ArrayList<String> MICROGAMES = new ArrayList<String>(Arrays.asList(
-			"GridGame"
-			//"BubbleGame", "AsteroidDodge"
+			"FillGrid",
+			"BubblePop",
+			"AsteroidDodge"
 	));
 	
 	public GameScreen(LilliGame gm) {
 		super(gm);
 		batch = new SpriteBatch();
 		font = new BitmapFont(Gdx.files.internal("data/default.fnt"), Gdx.files.internal("data/default.png"),false);
+		currentMg = -1;
+		
+		final GameScreen parent = this;
+		hideMessageTask = new Task(){
+		    @Override
+		    public void run() {
+		        parent.hideMessage();
+		    }
+		};
 	}
 
 	@Override
@@ -57,20 +70,16 @@ public class GameScreen extends Screen {
 		}
 		
 		if (mg.lost) {
-			this.showMessage("GAME OVER! Taking you back to the menu...", 9999);		
-			Timer.schedule(new Task(){
-			    @Override
-			    public void run() {
-			    	mg = null;
-			        game.setScreen("MainMenuScreen");
-			    }
-			}, 2);
+			mg.dispose();
+			mg = null;
+			game.setScreen("GameOverScreen");
+			return;
 		}
 		
 		if (mg.timeLeft <= 0) {
 			if (!mg.isFinished()) {
 				mg.lost = true;
-			} else {
+			} else if (!mg.lost) {
 				this.switchMicroGame();
 			}
 		}
@@ -81,47 +90,37 @@ public class GameScreen extends Screen {
 	}
 	
 	public void showMessage(String message, float time) {
-		final GameScreen parent = this;
-		
-		if (currentTask != null) {
-			currentTask.cancel();
+		if (hideMessageTask != null) {
+			hideMessageTask.cancel();
 		}
 		
 		this.message = message;
-		currentTask = new Task(){
-		    @Override
-		    public void run() {
-		        parent.hideMessage();
-		    }
-		};
-		Timer.schedule(currentTask, time);
+		Timer.schedule(hideMessageTask, time);
 	}
 
 	protected void hideMessage() {
 		message = null;
-		currentTask = null;
 	}
 
 	protected void switchMicroGame() {
 		MicroGame oldMg = mg;
-		MicroGame newMg = randomMicroGame(oldMg);
+		MicroGame newMg = randomMicroGame();
 		
 		mg = newMg;
 		if (oldMg != null) oldMg.dispose();
 	}
 	
-	protected MicroGame randomMicroGame(MicroGame prev) {
+	@SuppressWarnings("unchecked")
+	protected MicroGame randomMicroGame() {
 		MicroGame game = null;
 	
-		@SuppressWarnings("unchecked")
-		ArrayList<String> microgames = (ArrayList<String>) MICROGAMES.clone();
-		
-		if (prev != null) {
-			String prevName = prev.getClass().getSimpleName();
-			microgames.remove(prevName);
+		if (currentMg == -1 || currentMg == MICROGAMES.size()) {
+			shuffledMicrogames = (ArrayList<String>) MICROGAMES.clone();
+			Collections.shuffle(shuffledMicrogames);
+			currentMg = 0;
 		}
 		
-		String name = microgames.get(MathUtils.random(0, microgames.size()-1));
+		String name = shuffledMicrogames.get(currentMg++);
 
 		Class<?> screenClass;
 		try {

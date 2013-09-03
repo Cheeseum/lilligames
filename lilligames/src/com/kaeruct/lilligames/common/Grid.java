@@ -39,7 +39,9 @@ public class Grid<T> {
 	}
 	
 	public void addAt(T o, int x, int y) {
-		objects.get(y).set(x, o);
+		if (!isOcuppied(x, y)) {
+			objects.get(y).set(x, o);
+		}
 	}
 	
 	public T removeFrom(int x, int y) {
@@ -52,7 +54,7 @@ public class Grid<T> {
 	public boolean isOcuppied(int x, int y) {
 		try {
 			return objects.get(y).get(x) != null;
-		} catch (ArrayIndexOutOfBoundsException e) {
+		} catch (IndexOutOfBoundsException e) {
 			return true;
 		}
 	}
@@ -67,5 +69,14 @@ public class Grid<T> {
 		if (y < 0) y = 0;
 		if (y >= h) y = h-1;
 		return y;
+	}
+	
+	public boolean isFull() {
+		for (int i = 0; i < h; i += 1) {
+			for (int j = 0; j < w; j += 1) {
+				if (objects.get(i).get(j) == null) return false;
+			}
+		}
+		return true;
 	}
 }
