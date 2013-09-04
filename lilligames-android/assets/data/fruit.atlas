@@ -1,0 +1,54 @@
+
+fruit.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+Apple
+  rotate: false
+  xy: 1, 1
+  size: 34, 34
+  orig: 34, 34
+  offset: 0, 0
+  index: -1
+Banana
+  rotate: false
+  xy: 37, 1
+  size: 34, 34
+  orig: 34, 34
+  offset: 0, 0
+  index: -1
+Carrot
+  rotate: false
+  xy: 73, 1
+  size: 34, 34
+  orig: 34, 34
+  offset: 0, 0
+  index: -1
+Grapes
+  rotate: false
+  xy: 109, 1
+  size: 34, 34
+  orig: 34, 34
+  offset: 0, 0
+  index: -1
+GreenPepper
+  rotate: false
+  xy: 145, 1
+  size: 34, 34
+  orig: 34, 34
+  offset: 0, 0
+  index: -1
+Pineapple
+  rotate: false
+  xy: 181, 1
+  size: 34, 34
+  orig: 34, 34
+  offset: 0, 0
+  index: -1
+Strawberry
+  rotate: false
+  xy: 217, 1
+  size: 34, 34
+  orig: 34, 34
+  offset: 0, 0
+  index: -1

@@ -7,6 +7,8 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.MathUtils;
@@ -20,11 +22,12 @@ import com.kaeruct.lilligames.screen.GameScreen;
 public class FlickGame extends MicroGame {
 	Array<Particle> objects;
 	
-	Texture asteroidTx;
-	TextureRegion asteroidImage;
+	TextureAtlas texAtlas;
+	Array<AtlasRegion> atlasRegions;
 	
 	Vector3 lastTouchPos;
-	int spawnInterval = 1000000000;
+	int spawnInterval = 500000000;
+	int flickId = 0;
 	int misses = 0;
 	long lastTime = 0;
 	
@@ -49,7 +52,7 @@ public class FlickGame extends MicroGame {
 				center.set(o.x, o.y);
 				if (Intersector.intersectSegmentCircle(lastTouchPos2, touchPos2, center, o.radius * o.radius)) {
 					Vector2 velocity = lastTouchPos2.sub(touchPos2).mul(0.5f);
-					if (velocity.len() > 3.0f) {
+					if (velocity.len() > 1.0f) {
 						o.dx += -velocity.x;
 						o.dy += velocity.y;
 						break;
@@ -70,38 +73,35 @@ public class FlickGame extends MicroGame {
 	
 	public FlickGame (GameScreen parent) {
 		super(parent);
-		bg = new Color(0.2f, 0.2f, 0.2f, 1.0f);
+		bg = new Color(0.78f, 0.88f, 0.92f, 1.0f);
 		
-		asteroidTx = new Texture(Gdx.files.internal("data/potato.png"));
-		asteroidTx.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
-		asteroidImage = new TextureRegion(asteroidTx, 0, 0,
-		asteroidTx.getWidth(), asteroidTx.getHeight());
+		texAtlas = new TextureAtlas(Gdx.files.internal("data/fruit.atlas"));
+		atlasRegions = texAtlas.getRegions();
 		
 		objects = new Array<Particle>();
 		lastTouchPos = new Vector3();
 		
 		Gdx.input.setInputProcessor(new InputHandler());
+		
+		// random fruit
+		flickId = MathUtils.random(0, atlasRegions.size - 1);
+		parent.showMessage("Hit away the " + atlasRegions.get(flickId).name + "!");
 	}
 	
-	private void spawnObject (boolean shouldFlick) {
+	private void spawnObject (int objectId) {
 		Particle p = new Particle();
 		p.x = -10.0f;
 		p.y = Gdx.graphics.getHeight() / 2.0f;
-		p.radius = 50.0f;
+		p.radius = 25.0f;
 		p.dx += 6.0f;
-		p.misc = shouldFlick ? 1 : 0;
+		p.misc = objectId;
 		objects.add(p);
 	}
 	
 	@Override
 	public void onRender() {
 		for (Particle o : objects) {
-			if (o.misc > 0) {
-				batch.setColor(Color.ORANGE);
-			} else {
-				batch.setColor(o.color);
-			}
-			batch.draw(asteroidImage,
+			batch.draw(atlasRegions.get((int)o.misc),
 					o.x-o.radius, o.y-o.radius,
 					o.radius, o.radius,
 					o.radius*2, o.radius*2,
@@ -115,7 +115,7 @@ public class FlickGame extends MicroGame {
 		long t = TimeUtils.nanoTime();
 		if (t - lastTime > spawnInterval) {
 			lastTime = t;
-			spawnObject(MathUtils.random() < 0.7);
+			spawnObject(MathUtils.random(0, atlasRegions.size - 1));
 		}
 		
 		Iterator<Particle> bb = objects.iterator(); 
@@ -131,7 +131,7 @@ public class FlickGame extends MicroGame {
 	    	
 	    	// flickables entering the "capture zone"
 	    	// offscreen to prevent excessive miss tallying
-	    	if (o.misc == 1
+	    	if (o.misc == flickId
 	    		&& o.x > Gdx.graphics.getWidth() + o.radius * 2 
 	    		&& o.y > Gdx.graphics.getHeight() / 2 - 50.0f
 	    		&& o.y > Gdx.graphics.getHeight() / 2 - 50.0f) {
@@ -158,7 +158,7 @@ public class FlickGame extends MicroGame {
 	@Override
 	public void dispose() {
 		super.dispose();
-		asteroidTx.dispose();
+		texAtlas.dispose();
 		Gdx.input.setInputProcessor(null);
 	}
 }
