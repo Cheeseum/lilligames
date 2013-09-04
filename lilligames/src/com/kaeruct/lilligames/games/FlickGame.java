@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -26,6 +25,7 @@ public class FlickGame extends MicroGame {
 	
 	Vector3 lastTouchPos;
 	int spawnInterval = 1000000000;
+	int misses = 0;
 	long lastTime = 0;
 	
 	class InputHandler extends InputAdapter {
@@ -45,9 +45,6 @@ public class FlickGame extends MicroGame {
 			Vector2 touchPos2 = new Vector2(touchPos.x, touchPos.y);
 			Vector2 lastTouchPos2 = new Vector2(lastTouchPos.x, lastTouchPos.y);
 			
-			
-			System.out.println(touchPos.x + " " + touchPos.y + " last: " + lastTouchPos.x + " " + lastTouchPos.y);
-		
 			for (Particle o : objects) {
 				center.set(o.x, o.y);
 				if (Intersector.intersectSegmentCircle(lastTouchPos2, touchPos2, center, o.radius * o.radius)) {
@@ -91,7 +88,7 @@ public class FlickGame extends MicroGame {
 		p.x = -10.0f;
 		p.y = Gdx.graphics.getHeight() / 2.0f;
 		p.radius = 50.0f;
-		p.dx += 3.5f;
+		p.dx += 6.0f;
 		p.misc = shouldFlick ? 1 : 0;
 		objects.add(p);
 	}
@@ -99,7 +96,11 @@ public class FlickGame extends MicroGame {
 	@Override
 	public void onRender() {
 		for (Particle o : objects) {
-			batch.setColor(o.color);
+			if (o.misc > 0) {
+				batch.setColor(Color.ORANGE);
+			} else {
+				batch.setColor(o.color);
+			}
 			batch.draw(asteroidImage,
 					o.x-o.radius, o.y-o.radius,
 					o.radius, o.radius,
@@ -107,15 +108,6 @@ public class FlickGame extends MicroGame {
 					1.0f, 1.0f, o.rotation);
 	    }
 		
-		batch.end();
-		
-		ShapeRenderer r = new ShapeRenderer();
-		r.begin(ShapeRenderer.ShapeType.Circle);
-		r.setColor(1, 0, 0, 1);
-		r.circle(touchPos.x,  touchPos.y, 1.0f);
-		r.circle(lastTouchPos.x,  lastTouchPos.y, 1.0f);
-		r.end();
-		batch.begin();
 	}
 
 	@Override
@@ -123,7 +115,7 @@ public class FlickGame extends MicroGame {
 		long t = TimeUtils.nanoTime();
 		if (t - lastTime > spawnInterval) {
 			lastTime = t;
-			spawnObject(MathUtils.random(0, 10) < 7);
+			spawnObject(MathUtils.random() < 0.7);
 		}
 		
 		Iterator<Particle> bb = objects.iterator(); 
@@ -137,10 +129,30 @@ public class FlickGame extends MicroGame {
 	    		continue;
 	    	}
 	    	
-	    	if (o.x > Gdx.graphics.getWidth()) {
+	    	// flickables entering the "capture zone"
+	    	// offscreen to prevent excessive miss tallying
+	    	if (o.misc == 1
+	    		&& o.x > Gdx.graphics.getWidth() + o.radius * 2 
+	    		&& o.y > Gdx.graphics.getHeight() / 2 - 50.0f
+	    		&& o.y > Gdx.graphics.getHeight() / 2 - 50.0f) {
+	    		
+	    		misses++;
+	    		parent.showMessage("Misses: " + misses + "!");	    		
+
+	    		if (misses > 3) {
+	    			lost = true;
+	    		}
+	    	}
+	    	
+	    	if (o.offscreen()) {
 	    		o.kill();
 	    	}
 		}
+	}
+	
+	@Override
+	public boolean isFinished() {
+		return misses < 3;
 	}
 	
 	@Override
