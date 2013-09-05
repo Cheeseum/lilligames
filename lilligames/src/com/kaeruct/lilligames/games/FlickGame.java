@@ -26,7 +26,7 @@ public class FlickGame extends MicroGame {
 	Array<AtlasRegion> atlasRegions;
 	
 	Vector3 lastTouchPos;
-	int spawnInterval = 500000000;
+	int spawnInterval = 250000000;
 	int flickId = 0;
 	int misses = 0;
 	long lastTime = 0;
@@ -91,8 +91,8 @@ public class FlickGame extends MicroGame {
 	private void spawnObject (int objectId) {
 		Particle p = new Particle();
 		p.x = -10.0f;
-		p.y = Gdx.graphics.getHeight() / 2.0f;
-		p.radius = 25.0f;
+		p.y = Gdx.graphics.getHeight() / (MathUtils.random(3, 12) * 0.5f);
+		p.radius = 35.0f;
 		p.dx += 6.0f;
 		p.misc = objectId;
 		objects.add(p);
@@ -115,7 +115,11 @@ public class FlickGame extends MicroGame {
 		long t = TimeUtils.nanoTime();
 		if (t - lastTime > spawnInterval) {
 			lastTime = t;
-			spawnObject(MathUtils.random(0, atlasRegions.size - 1));
+			if (MathUtils.random() < 0.4) {
+				spawnObject(flickId);
+			} else {
+				spawnObject(MathUtils.random(0, atlasRegions.size - 1));
+			}
 		}
 		
 		Iterator<Particle> bb = objects.iterator(); 
@@ -139,7 +143,7 @@ public class FlickGame extends MicroGame {
 	    		misses++;
 	    		parent.showMessage("Misses: " + misses + "!");	    		
 
-	    		if (misses > 3) {
+	    		if (misses > 2) {
 	    			lost = true;
 	    		}
 	    	}
