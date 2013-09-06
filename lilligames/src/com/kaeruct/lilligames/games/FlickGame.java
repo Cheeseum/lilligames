@@ -115,6 +115,15 @@ public class FlickGame extends MicroGame {
 		objects.add(p);
 	}
 	
+	private boolean isCaptured (Particle o) {
+		return o.x > Gdx.graphics.getWidth() + o.radius * 2;
+	}
+	
+	// whether the given object is off-screen but NOT in the capture zone
+	private boolean isUncaptured (Particle o) {
+		return o.offscreen() && !isCaptured(o);
+	}
+	
 	@Override
 	public void onRender() {
 		for (Particle o : objects) {
@@ -126,7 +135,7 @@ public class FlickGame extends MicroGame {
 	    }
 		
 	}
-
+	
 	@Override
 	public void update(float delta) {
 		long t = TimeUtils.nanoTime();
@@ -151,8 +160,9 @@ public class FlickGame extends MicroGame {
 	    	}
 	    	
 	    	// flickables entering the "capture zone"
+	    	// OR good objects flying off-screen
 	    	// offscreen to prevent excessive miss tallying
-	    	if (o.misc == flickId && o.x > Gdx.graphics.getWidth() + o.radius * 2) {
+	    	if (o.misc == flickId && isCaptured(o) || o.misc != flickId && isUncaptured(o)) {
 	    		misses++;
 	    		parent.showMessage("Misses: " + misses + "!");	    		
 
@@ -160,6 +170,7 @@ public class FlickGame extends MicroGame {
 	    			lost = true;
 	    		}
 	    	}
+	    	
 	    	
 	    	if (o.offscreen()) {
 	    		o.kill();
