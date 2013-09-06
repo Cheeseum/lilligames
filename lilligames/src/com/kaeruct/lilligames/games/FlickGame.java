@@ -93,7 +93,7 @@ public class FlickGame extends MicroGame {
 		
 		// random fruit
 		flickId = MathUtils.random(0, atlasRegions.size - 1);
-		parent.showMessage("Hit away the " + atlasRegions.get(flickId).name + "!");
+		parent.showMessage("Hit away ONLY the " + atlasRegions.get(flickId).name + "s!");
 	}
 	
 	private void spawnObject (int objectId) {
