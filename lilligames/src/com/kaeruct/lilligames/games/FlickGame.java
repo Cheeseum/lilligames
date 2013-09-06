@@ -27,6 +27,7 @@ public class FlickGame extends MicroGame {
 	
 	Vector3 lastTouchPos;
 	int spawnInterval = 250000000;
+	int touchDragCount = 0;
 	int flickId = 0;
 	int misses = 0;
 	long lastTime = 0;
@@ -34,6 +35,8 @@ public class FlickGame extends MicroGame {
 	class InputHandler extends InputAdapter {
 		@Override
 		public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+			touchDragCount = 0;
+			
 			lastTouchPos.set(screenX, screenY, 0);
 			camera.unproject(lastTouchPos);
 			return true;
@@ -44,19 +47,29 @@ public class FlickGame extends MicroGame {
 			touchPos.set(screenX, screenY, 0);
 			camera.unproject(touchPos);
 			
+			// buffer a few drag events to get a better line sample
+			touchDragCount++;
+			if (touchDragCount < 3) {
+				return true;
+			}
+			touchDragCount = 0;
+			
 			Vector2 center = new Vector2();
 			Vector2 touchPos2 = new Vector2(touchPos.x, touchPos.y);
 			Vector2 lastTouchPos2 = new Vector2(lastTouchPos.x, lastTouchPos.y);
+			Vector2 velocity = new Vector2();
+			float displacement = 0.0f;
+			
+			//System.out.printf("touch: %f %f last: %f %f\n", touchPos.x, touchPos.y, lastTouchPos.x, lastTouchPos.y);
 			
 			for (Particle o : objects) {
 				center.set(o.x, o.y);
-				if (Intersector.intersectSegmentCircle(lastTouchPos2, touchPos2, center, o.radius * o.radius)) {
-					Vector2 velocity = lastTouchPos2.sub(touchPos2).mul(0.5f);
-					if (velocity.len() > 1.0f) {
-						o.dx += -velocity.x;
-						o.dy += velocity.y;
-						break;
-					}
+				displacement = Intersector.intersectSegmentCircleDisplace(lastTouchPos2, touchPos2, center, o.radius, velocity);
+				if (displacement != Float.POSITIVE_INFINITY) {
+					velocity = lastTouchPos2.sub(touchPos2).mul(0.5f);
+					o.dx += -velocity.x;
+					o.dy += velocity.y;
+					break;
 				}
 			}
 			
@@ -67,6 +80,10 @@ public class FlickGame extends MicroGame {
 		
 		@Override
 		public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+			touchDragCount = 0;
+			
+			lastTouchPos.set(screenX, screenY, 0);
+			camera.unproject(lastTouchPos);
 			return true;
 		}
 	}
@@ -92,7 +109,7 @@ public class FlickGame extends MicroGame {
 		Particle p = new Particle();
 		p.x = -10.0f;
 		p.y = Gdx.graphics.getHeight() / (MathUtils.random(3, 12) * 0.5f);
-		p.radius = 35.0f;
+		p.radius = 40.0f;
 		p.dx += 6.0f;
 		p.misc = objectId;
 		objects.add(p);
@@ -135,11 +152,7 @@ public class FlickGame extends MicroGame {
 	    	
 	    	// flickables entering the "capture zone"
 	    	// offscreen to prevent excessive miss tallying
-	    	if (o.misc == flickId
-	    		&& o.x > Gdx.graphics.getWidth() + o.radius * 2 
-	    		&& o.y > Gdx.graphics.getHeight() / 2 - 50.0f
-	    		&& o.y > Gdx.graphics.getHeight() / 2 - 50.0f) {
-	    		
+	    	if (o.misc == flickId && o.x > Gdx.graphics.getWidth() + o.radius * 2) {
 	    		misses++;
 	    		parent.showMessage("Misses: " + misses + "!");	    		
 
