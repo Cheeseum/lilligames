@@ -77,15 +77,6 @@ public class FlickGame extends MicroGame {
 			lastTouchPos.set(touchPos);
 			return true;
 		}
-		
-		@Override
-		public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-			touchDragCount = 0;
-			
-			lastTouchPos.set(screenX, screenY, 0);
-			camera.unproject(lastTouchPos);
-			return true;
-		}
 	}
 	
 	public FlickGame (GameScreen parent) {
