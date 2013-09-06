@@ -26,6 +26,7 @@ public class GameScreen extends Screen {
 	
 	final static int DEFAULT_MESSAGE_TIME = 2;
 	final static ArrayList<String> MICROGAMES = new ArrayList<String>(Arrays.asList(
+			"FlickGame",
 			"FillGrid",
 			"BubblePop",
 			"AsteroidDodge"
