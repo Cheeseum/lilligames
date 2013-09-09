@@ -128,6 +128,7 @@ public class FlickGame extends MicroGame {
 	
 	@Override
 	public void onRender() {
+		batch.setColor(Color.WHITE);
 		for (Particle o : objects) {
 			batch.draw(atlasRegions.get((int)o.misc),
 					o.x-o.radius, o.y-o.radius,
