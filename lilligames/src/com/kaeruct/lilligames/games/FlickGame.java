@@ -24,8 +24,13 @@ public class FlickGame extends MicroGame {
 	
 	TextureAtlas texAtlas;
 	Array<AtlasRegion> atlasRegions;
-	
+
+	Vector2 touchPos2;
+	Vector2 lastTouchPos2;
 	Vector3 lastTouchPos;
+	Vector2 particleCenter;
+	Vector2 touchVelocity;
+	
 	int spawnInterval = 250000000;
 	int touchDragCount = 0;
 	int flickId = 0;
@@ -54,21 +59,19 @@ public class FlickGame extends MicroGame {
 			}
 			touchDragCount = 0;
 			
-			Vector2 center = new Vector2();
-			Vector2 touchPos2 = new Vector2(touchPos.x, touchPos.y);
-			Vector2 lastTouchPos2 = new Vector2(lastTouchPos.x, lastTouchPos.y);
-			Vector2 velocity = new Vector2();
 			float displacement = 0.0f;
+			touchPos2.set(touchPos.x, touchPos.y);
+			lastTouchPos2.set(lastTouchPos.x, lastTouchPos.y);
 			
-			//System.out.printf("touch: %f %f last: %f %f\n", touchPos.x, touchPos.y, lastTouchPos.x, lastTouchPos.y);
+			//System.out.printf("touch: %f %f last: %f %f\n", touchPos2.x, touchPos2.y, lastTouchPos2.x, lastTouchPos2.y);
 			
 			for (Particle o : objects) {
-				center.set(o.x, o.y);
-				displacement = Intersector.intersectSegmentCircleDisplace(lastTouchPos2, touchPos2, center, o.radius, velocity);
+				particleCenter.set(o.x, o.y);
+				displacement = Intersector.intersectSegmentCircleDisplace(lastTouchPos2, touchPos2, particleCenter, o.radius, touchVelocity);
 				if (displacement != Float.POSITIVE_INFINITY) {
-					velocity = lastTouchPos2.sub(touchPos2).mul(0.5f);
-					o.dx += -velocity.x;
-					o.dy += velocity.y;
+					touchVelocity.set(lastTouchPos2.sub(touchPos2).mul(0.5f));
+					o.dx += -touchVelocity.x;
+					o.dy += touchVelocity.y;
 					break;
 				}
 			}
@@ -88,6 +91,10 @@ public class FlickGame extends MicroGame {
 		
 		objects = new Array<Particle>();
 		lastTouchPos = new Vector3();
+		particleCenter = new Vector2();
+		touchPos2 = new Vector2();
+		lastTouchPos2 = new Vector2();
+		touchVelocity = new Vector2();
 		
 		Gdx.input.setInputProcessor(new InputHandler());
 		
