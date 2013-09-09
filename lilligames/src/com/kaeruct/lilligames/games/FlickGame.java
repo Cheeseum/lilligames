@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
@@ -24,6 +25,7 @@ public class FlickGame extends MicroGame {
 	
 	TextureAtlas texAtlas;
 	Array<AtlasRegion> atlasRegions;
+	Sound hitSound;
 
 	Vector2 touchPos2;
 	Vector2 lastTouchPos2;
@@ -72,6 +74,7 @@ public class FlickGame extends MicroGame {
 					touchVelocity.set(lastTouchPos2.sub(touchPos2).mul(0.5f));
 					o.dx += -touchVelocity.x;
 					o.dy += touchVelocity.y;
+					hitSound.play();
 					break;
 				}
 			}
@@ -88,6 +91,7 @@ public class FlickGame extends MicroGame {
 		
 		texAtlas = new TextureAtlas(Gdx.files.internal("data/fruit.atlas"));
 		atlasRegions = texAtlas.getRegions();
+		hitSound = Gdx.audio.newSound(Gdx.files.internal("data/squishy.ogg"));
 		
 		objects = new Array<Particle>();
 		lastTouchPos = new Vector3();
@@ -185,6 +189,7 @@ public class FlickGame extends MicroGame {
 	public void dispose() {
 		super.dispose();
 		texAtlas.dispose();
+		hitSound.dispose();
 		Gdx.input.setInputProcessor(null);
 	}
 }
